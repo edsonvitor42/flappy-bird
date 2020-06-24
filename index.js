@@ -1,14 +1,20 @@
 
-var bird, footer, background, menu;
+
+const som_hit = new Audio();
+som_hit.src = './effect-sounds/hit.wav';
+
+const globais = {
+    frames: 0
+}
 
 let activeScreen = {};
-const screens = {
+let screens = {
     menu: {
         draw() {
-            background.drawImage();
-            footer.drawImage();
-            bird.drawImage();
-            menu.drawImage();
+            globais.background.drawImage();
+            globais.footer.drawImage();
+            globais.bird.drawImage();
+            globais.menu.drawImage();
         },
         click() {
             changeScreen(screens.game);
@@ -19,29 +25,43 @@ const screens = {
     },
     game: {
         draw() {
-            background.drawImage();
-            footer.drawImage();
-            bird.drawImage();
+            globais.background.drawImage();
+            globais.footer.drawImage();
+            globais.bird.drawImage(globais.frames);
+        },
+        click() {
+            globais.bird.jump();
         },
         update() {
-            bird.update();
+            if (globais.bird.collision(globais.bird.positionY + globais.bird.height, globais.footer.positionY)) {
+                som_hit.play();
+
+                setTimeout(() => {
+                    changeScreen(screens.menu);
+                }, 150);
+            
+                return;
+            }
+
+            globais.bird.update();
+            globais.footer.update();
         }
     }
 };
 
 function onload() {
-    const sprites = new Image();
-    sprites.src = 'sprites.png';
+    globais.sprites = new Image();
+    globais.sprites.src = 'sprites.png';
 
-    const canvas = document.querySelector('canvas');
-    const ctx = canvas.getContext('2d');
+    globais.canvas = document.querySelector('canvas');
+    globais.ctx = globais.canvas.getContext('2d');
 
-    background = new Background(canvas, sprites, ctx);
-    footer = new Footer(canvas, sprites, ctx);
-    bird = new Bird(canvas, sprites, ctx);
-    menu = new Menu(canvas, sprites, ctx);
+    globais.background = new Background(globais.canvas, globais.sprites, globais.ctx);
+    globais.footer = createFooter();
+    globais.menu = new Menu(globais.canvas, globais.sprites, globais.ctx);
+    globais.bird = createBird();
 
-    window.addEventListener('click', function() {
+    window.addEventListener('click', function () {
         if (activeScreen.click) {
             activeScreen.click();
         }
@@ -51,13 +71,29 @@ function onload() {
     frame();
 }
 
+const createBird = () => {
+    const obj = new Bird(globais.canvas, globais.sprites, globais.ctx);
+
+    return obj;
+}
+
+const createFooter = () => {
+    const obj = new Footer(globais.canvas, globais.sprites, globais.ctx);
+
+    return obj;
+}
+
 const changeScreen = (newScreen) => {
     activeScreen = newScreen;
+
+    globais.bird = createBird();
+    globais.footer = createFooter();
 };
 
 const frame = () => {
     activeScreen.draw();
     activeScreen.update();
 
+    globais.frames++;
     requestAnimationFrame(frame);
 }

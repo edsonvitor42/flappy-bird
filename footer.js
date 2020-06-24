@@ -15,6 +15,10 @@ class Footer {
         this._heightOnCanvas = this._height; // A altura do desenho no canvas.
     }
 
+    get positionY() {
+        return this._positionY;
+    }
+
     /**
      * Função responsável por desenhar o objeto na tela.
      */
@@ -36,10 +40,17 @@ class Footer {
             this._sourceY,
             this._width,
             this._height,
-            (this._positionX + this._height),
+            (this._positionX + this._width),
             this._positionY,
             this._widthOnCanvas,
             this._heightOnCanvas,
         );
+    }
+
+    update = () => {
+        const repeatAt = this._width / 2;
+        const move = this._positionX - 1;
+
+        this._positionX = move % repeatAt;
     }
 };
