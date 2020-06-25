@@ -81,11 +81,37 @@ class Bird {
         this._velocity = -this._jump;
     }
 
-    collision = (position1, position2) => {
+    collisionFooter = (position1, position2) => {
         if (position1 >= position2) {
             return true;
         }
 
         return false;
+    }
+
+    collisionPipe = (game) => {
+        let collision = false;
+
+        const birdHead = this._positionY;
+        const birdFeet = this._positionY + this._height;
+
+        for (const item of game.pipe.listPipes) {
+            if (this._positionX >= item.x) {
+
+                if (birdHead <= item.sky.y) {
+                    console.log('Bateu a cabeça');
+                    collision = true;
+                    break;
+                }
+
+                if (birdFeet >= item.footer.y) {
+                    console.log('Bateu o pé');
+                    collision = true;
+                    break;
+                }
+            }
+        }
+
+        return collision;
     }
 };

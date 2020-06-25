@@ -1,65 +1,73 @@
 
 
-const som_hit = new Audio();
-som_hit.src = './effect-sounds/hit.wav';
+const sounds = {};
+sounds.hit = new Audio();
+sounds.hit.src = './effect-sounds/hit.wav';
 
-const globais = {
+sounds.jump = new Audio();
+sounds.jump.src = './effect-sounds/jump.wav';
+
+const global = {
     frames: 0
-}
+};
 
 let activeScreen = {};
 let screens = {
     menu: {
         draw() {
-            globais.background.drawImage();
-            globais.footer.drawImage();
-            globais.bird.drawImage();
-            globais.menu.drawImage();
+            global.background.drawImage();
+            global.footer.drawImage();
+            global.bird.drawImage(global.frames);
+            global.menu.drawImage();
         },
         click() {
             changeScreen(screens.game);
         },
         update() {
-
+            global.footer.update();
         }
     },
     game: {
         draw() {
-            globais.background.drawImage();
-            globais.footer.drawImage();
-            globais.bird.drawImage(globais.frames);
+            global.background.drawImage();
+            global.pipe.drawImage();
+            global.footer.drawImage();
+            global.bird.drawImage(global.frames);
         },
         click() {
-            globais.bird.jump();
+            global.bird.jump();
+            sounds.jump.play();
         },
         update() {
-            if (globais.bird.collision(globais.bird.positionY + globais.bird.height, globais.footer.positionY)) {
-                som_hit.play();
+            if (global.bird.collisionFooter(global.bird.positionY + global.bird.height, global.footer.positionY) ||
+                global.bird.collisionPipe(global)) {
+                sounds.hit.play();
 
                 setTimeout(() => {
                     changeScreen(screens.menu);
                 }, 150);
-            
                 return;
             }
 
-            globais.bird.update();
-            globais.footer.update();
+            global.bird.update();
+            global.pipe.update(global.frames);
+            global.footer.update();
         }
     }
 };
 
 function onload() {
-    globais.sprites = new Image();
-    globais.sprites.src = 'sprites.png';
+    global.sprites = new Image();
+    global.sprites.src = 'sprites.png';
 
-    globais.canvas = document.querySelector('canvas');
-    globais.ctx = globais.canvas.getContext('2d');
+    global.canvas = document.querySelector('canvas');
+    global.ctx = global.canvas.getContext('2d');
 
-    globais.background = new Background(globais.canvas, globais.sprites, globais.ctx);
-    globais.footer = createFooter();
-    globais.menu = new Menu(globais.canvas, globais.sprites, globais.ctx);
-    globais.bird = createBird();
+    global.background = createBackground();
+    global.footer = createFooter();
+    global.menu = createMenu();
+    global.bird = createBird();
+    global.pipe = createPipe();
 
     window.addEventListener('click', function () {
         if (activeScreen.click) {
@@ -69,16 +77,34 @@ function onload() {
 
     changeScreen(screens.menu)
     frame();
-}
+};
 
 const createBird = () => {
-    const obj = new Bird(globais.canvas, globais.sprites, globais.ctx);
+    const obj = new Bird(global.canvas, global.sprites, global.ctx);
 
     return obj;
-}
+};
 
 const createFooter = () => {
-    const obj = new Footer(globais.canvas, globais.sprites, globais.ctx);
+    const obj = new Footer(global.canvas, global.sprites, global.ctx);
+
+    return obj;
+};
+
+const createPipe = () => {
+    const obj = new Pipe(global.canvas, global.sprites, global.ctx, global.bird)
+
+    return obj;
+};
+
+const createBackground = () => {
+    const obj = new Background(global.canvas, global.sprites, global.ctx);
+
+    return obj;
+};
+
+const createMenu = () => {
+    const obj = new Menu(global.canvas, global.sprites, global.ctx);
 
     return obj;
 }
@@ -86,14 +112,17 @@ const createFooter = () => {
 const changeScreen = (newScreen) => {
     activeScreen = newScreen;
 
-    globais.bird = createBird();
-    globais.footer = createFooter();
+    global.bird = createBird();
+    global.footer = createFooter();
+    global.background = createBackground();
+    global.pipe = createPipe();
+    global.menu = createMenu();
 };
 
 const frame = () => {
     activeScreen.draw();
     activeScreen.update();
 
-    globais.frames++;
+    global.frames++;
     requestAnimationFrame(frame);
-}
+};
